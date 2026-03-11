@@ -36,6 +36,26 @@ app.get('/verify', async (req, res) => {
   }
 });
 
+// Global roulette timer - synced for all users
+// Each round = 15s countdown + 11s spin = 26s total
+const ROUND_DURATION = 26000;
+const COUNTDOWN_DURATION = 15000;
+
+app.get('/timer', (req, res) => {
+  const now = Date.now();
+  const pos = now % ROUND_DURATION; // position within current round (ms)
+  
+  if (pos < COUNTDOWN_DURATION) {
+    // Still in countdown phase
+    const remaining = (COUNTDOWN_DURATION - pos) / 1000;
+    res.json({ phase: 'countdown', remaining: parseFloat(remaining.toFixed(2)) });
+  } else {
+    // In spin phase
+    const spinElapsed = (pos - COUNTDOWN_DURATION) / 1000;
+    res.json({ phase: 'spinning', spinElapsed: parseFloat(spinElapsed.toFixed(2)) });
+  }
+});
+
 app.get('/', (req, res) => res.send('BloxLuck verify server running ✅'));
 
 const PORT = process.env.PORT || 3000;
